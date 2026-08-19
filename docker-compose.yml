@@ -5,6 +5,7 @@ services:
       - "8000:8000"
     environment:
      DATABASE_URL: postgresql://postgres:postgres@db:5432/equipment_db
+     SEAWEEDFS_ENDPOINT: http://seaweedfs:8333
     depends_on:
     - db
     - seaweedfs
