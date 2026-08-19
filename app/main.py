@@ -1,33 +1,24 @@
-from datetime import date
-
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-
 from app import models
 from app.database import engine, get_db
 
-models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind = engine)
 
 app = FastAPI()
-
 
 @app.get("/")
 def root():
     return {"message": "Equipment Management API is running"}
 
-
-# ---------- EQUIPMENT ----------
-
+#Create equipment
 @app.post("/equipment")
-def create_equipment(name: str, category: str, serial_number: str,
-                     db: Session = Depends(get_db)):
-    equipment = models.Equipment(name=name, category=category,
-                                 serial_number=serial_number)
+def create_equipment(name: str, category: str, serial_number: str, db: Session = Depends(get_db)):
+    equipment = models.Equipment(name = name, category = category, serial_number = serial_number)
     db.add(equipment)
     db.commit()
     db.refresh(equipment)
     return equipment
-
 
 @app.get("/equipment")
 def list_equipment(db: Session = Depends(get_db)):
@@ -103,21 +94,11 @@ def list_bookings(db: Session = Depends(get_db)):
     return db.query(models.Booking).all()
 
 
-@app.get("/bookings/{booking_id}")
-def get_booking(booking_id: int, db: Session = Depends(get_db)):
-    booking = db.query(models.Booking).filter(
-        models.Booking.id == booking_id).first()
-    if not booking:
-        raise HTTPException(status_code=404, detail="Booking not found")
-    return booking
-
-
-@app.delete("/bookings/{booking_id}")
-def cancel_booking(booking_id: int, db: Session = Depends(get_db)):
-    booking = db.query(models.Booking).filter(
-        models.Booking.id == booking_id).first()
-    if not booking:
-        raise HTTPException(status_code=404, detail="Booking not found")
-    booking.status = "cancelled"
-    db.commit()
-    return {"message": "Booking cancelled"}
+#Cancel/delete booking
+@app.delete("/bookings/{id}")
+def delete_booking(id: int):
+    for booking in bookings:
+        if booking["id"] == id:
+            bookings.remove(booking)
+            return {"message": "Booking cancelled"}
+        return{"message": "Booking not found"}"""
