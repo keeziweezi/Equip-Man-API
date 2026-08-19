@@ -1,43 +1,39 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app import models
+from app.database import engine, get_db
+
+models.Base.metadata.create_all(bind = engine)
 
 app = FastAPI()
-
-equipment = []
-bookings = []
 
 @app.get("/")
 def root():
     return{"message": "Equipment Management API is running"}
 
-@app.get("/equipment")
-def list_equipment():
-    return {"equipment": []}
-
 #Create equipment
 @app.post("/equipment")
-def list_equipment(id: int, name: str, category: str):
-    item = {
-        "id": id,
-        "name": name,
-        "category": category
-    }
-    equipment.append(item)
-    return item
+def create_equipment(name: str, category: str, serial_number: str, db: Session = Depends(get_db)):
+    equipment = models.Equipment(name = name, category = category, serial_number = serial_number)
+    db.add(equipment)
+    db.commit()
+    db.refresh(equipment)
+    return equipment
 
 #Retrieve all equipment
 @app.get("/equipment")
-def list_equipment():
-    return {"equipment": equipment}
+def list_equipment(db: Session = Depends(get_db)):
+    return db.query(models.Equipment).all()
 
 #Retrieve one equipment
-@app.get("/equipment/{id}")
-def get_equipment(id: int):
-    for item in equipment:
-        if item["id"] ==id:
-            return item
-        return {"message": "Equipment not found"}
+@app.get("/equipment/{equipment_id}")
+def get_equipment(equipment_id: int, db: Session = Depends(get_db)):
+    equipment = db.query(models.Equipment).filter(models.Equipment.id == equipment_id).first()
+    if not equipment:
+        raise HTTPException(status_code = 404, details = "Equipment not found")
+    return equipment
 
-#Update equipment
+"""Update equipment
 @app.put("/equipment/{id}")
 def update_equipment(id: int, name: str, category: str):
     for item in equipment:
@@ -96,4 +92,4 @@ def delete_booking(id: int):
         if booking["id"] == id:
             bookings.remove(booking)
             return {"message": "Booking cancelled"}
-        return{"message": "Booking not found"}
+        return{"message": "Booking not found"}"""
