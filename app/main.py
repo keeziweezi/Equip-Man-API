@@ -1,21 +1,15 @@
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-import uuid
-from app import models, storage
+from app import models
 from app.database import engine, get_db
 
 models.Base.metadata.create_all(bind = engine)
 
 app = FastAPI()
 
-@app.on_event("startup")
-def startup():
-    storage.ensure_bucket()
-
 @app.get("/")
 def root():
-    return {"message": "Equipment Management API is running"}
+    return{"message": "Equipment Management API is running"}
 
 #Create equipment
 @app.post("/equipment")
@@ -26,99 +20,59 @@ def create_equipment(name: str, category: str, serial_number: str, db: Session =
     db.refresh(equipment)
     return equipment
 
+#Retrieve all equipment
 @app.get("/equipment")
 def list_equipment(db: Session = Depends(get_db)):
     return db.query(models.Equipment).all()
 
-#Create equipment
+#Retrieve one equipment
 @app.get("/equipment/{equipment_id}")
 def get_equipment(equipment_id: int, db: Session = Depends(get_db)):
     equipment = db.query(models.Equipment).filter(models.Equipment.id == equipment_id).first()
     if not equipment:
-        raise HTTPException(status_code = 404, detail = "Equipment not found")
+        raise HTTPException(status_code = 404, details = "Equipment not found")
     return equipment
 
-#New document end points
-@app.post("/equipment/{equipment_id}/documents")
-def upload_document(equipment_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    equipment = db.query(models.Equipment).filter(models.Equipment.id == equipment_id).first()
-    if not equipment:
-        raise HTTPException(status_code=404, detail="Equipment not found")
+"""Update equipment
+@app.put("/equipment/{id}")
+def update_equipment(id: int, name: str, category: str):
+    for item in equipment:
+        if item["id"] == id:
+            item["name"] = name
+            item["category"] = category
+            return item
+        return {"message": "Equipment not found"}
 
-    object_key = f"equipment/{equipment_id}/{uuid.uuid4()}_{file.filename}"
-    storage.s3.upload_fileobj(file.file, storage.BUCKET_NAME, object_key)
-
-    document = models.Document(
-        equipment_id=equipment_id,
-        filename=file.filename,
-        object_key=object_key,
-        content_type=file.content_type,
-    )
-    db.add(document)
-    db.commit()
-    db.refresh(document)
-    return document
-
-
-@app.get("/equipment/{equipment_id}/documents")
-def list_documents(equipment_id: int, db: Session = Depends(get_db)):
-    return db.query(models.Document).filter(models.Document.equipment_id == equipment_id).all()
-
-@app.get("/documents/{document_id}/download")
-def download_document(document_id: int, db: Session = Depends(get_db)):
-    document = db.query(models.Document).filter(models.Document.id == document_id).first()
-    if not document:
-        raise HTTPException(status_code=404, detail="Document not found")
-
-    obj = storage.s3.get_object(Bucket=storage.BUCKET_NAME, Key=document.object_key)
-    return StreamingResponse(
-        obj["Body"],
-        media_type=document.content_type or "application/octet-stream",
-        headers={"Content-Disposition": f"attachment; filename={document.filename}"},
-    )
-
-
-""""
 #Create booking
 @app.post("/bookings")
-def create_booking(equipment_id: int, researcher_name: str,
-                   researcher_email: str, start_date: date,
-                   end_date: date, purpose: str,
-                   db: Session = Depends(get_db)):
+def create_booking(
+    id: int,
+    equipment_id: int,
+    researcher_name: str,
+    email: str,
+    booking_start_date: str,
+    booking_end_date: str,
+    booking_purpose: str
+):
+    for booking in bookings:
+        if booking["equipment_id"] == equipment_id:
+            if (booking_start_date <= booking["booking_end_date"]
+                 and booking_end_date >= booking["booking_start_date"]):
+                return {"message": "Equipment is already booked"}
+    booking = {
+        "id": id,
+        "equipment_id": equipment_id,
+        "researcher_name": researcher_name,
+        "email": email,
+        "booking_start_date": booking_start_date,
+        "booking_end_date": booking_end_date,
+        "booking_purpose": booking_purpose
+    }
 
-    if end_date < start_date:
-        raise HTTPException(status_code=400,
-                            detail="End date cannot be before start date")
-
-    equipment = db.query(models.Equipment).filter(
-        models.Equipment.id == equipment_id).first()
-    if not equipment:
-        raise HTTPException(status_code=404, detail="Equipment not found")
-
-    clash = db.query(models.Booking).filter(
-        models.Booking.equipment_id == equipment_id,
-        models.Booking.status == "active",
-        models.Booking.start_date <= end_date,
-        models.Booking.end_date >= start_date,
-    ).first()
-    if clash:
-        raise HTTPException(status_code=409,
-                            detail="Equipment is already booked for those dates")
-
-    booking = models.Booking(
-        equipment_id=equipment_id,
-        researcher_name=researcher_name,
-        researcher_email=researcher_email,
-        start_date=start_date,
-        end_date=end_date,
-        purpose=purpose,
-    )
-    db.add(booking)
-    db.commit()
-    db.refresh(booking)
+    bookings.append(booking)
     return booking
 
-
+#Retrieve all bookings
 @app.get("/bookings")
 def list_bookings():
     return {"bookings": bookings}
