@@ -21,51 +21,19 @@ def create_equipment(name: str, category: str, serial_number: str, db: Session =
     return equipment
 
 @app.get("/equipment")
-def list_equipment():
-    return {"equipment": []}
+def list_equipment(db: Session = Depends(get_db)):
+    return db.query(models.Equipment).all()
 
 #Create equipment
-@app.post("/equipment")
-def list_equipment(id: int, name: str, category: str):
-    item = {
-        "id": id,
-        "name": name,
-        "category": category
-    }
-    equipment.append(item)
-    return item
-
-#Retrieve all equipment
-@app.get("/equipment")
-def list_equipment():
-    return {"equipment": equipment}
-
-
 @app.get("/equipment/{equipment_id}")
 def get_equipment(equipment_id: int, db: Session = Depends(get_db)):
-    equipment = db.query(models.Equipment).filter(
-        models.Equipment.id == equipment_id).first()
+    equipment = db.query(models.Equipment).filter(models.Equipment.id == equipment_id).first()
     if not equipment:
-        raise HTTPException(status_code=404, detail="Equipment not found")
+        raise HTTPException(status_code = 404, detail = "Equipment not found")
     return equipment
 
 
-@app.put("/equipment/{equipment_id}")
-def update_equipment(equipment_id: int, name: str, category: str,
-                     db: Session = Depends(get_db)):
-    equipment = db.query(models.Equipment).filter(
-        models.Equipment.id == equipment_id).first()
-    if not equipment:
-        raise HTTPException(status_code=404, detail="Equipment not found")
-    equipment.name = name
-    equipment.category = category
-    db.commit()
-    db.refresh(equipment)
-    return equipment
-
-
-# ---------- BOOKINGS ----------
-
+""""
 #Create booking
 @app.post("/bookings")
 def create_booking(equipment_id: int, researcher_name: str,
@@ -125,4 +93,4 @@ def delete_booking(id: int):
         if booking["id"] == id:
             bookings.remove(booking)
             return {"message": "Booking cancelled"}
-        return{"message": "Booking not found"}
+        return{"message": "Booking not found"}"""
