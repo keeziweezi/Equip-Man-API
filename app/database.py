@@ -1,34 +1,19 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
-from datetime import datetime
-from app.database import Base
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-class Equipment(Base):
-    __tablename__ = "equipment"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:postgres@localhost:5432/equipment_db"
+)
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    category = Column(String)
-    serial_number = Column(String, unique=True)
-    description = Column(String, nullable=True)
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
-class Booking(Base):
-        __tablename__ = "bookings"
-
-        id = Column(Integer, primary_key=True)
-        equipment_id = Column(Integer, ForeignKey("equipment.id"))
-        researcher_name = Column(String, nullable=False)
-        researcher_email = Column(String, nullable=False)
-        start_date = Column(Date, nullable=False)
-        end_date = Column(Date, nullable=False)
-        purpose = Column(String, nullable=False)
-        status = Column(String, default="active")
-
-class Document(Base):
-    __tablename__ = "documents"
-
-    id = Column(Integer, primary_key=True)
-    equipment_id = Column(Integer, ForeignKey("equipment.id"))
-    filename = Column(String, nullable=False)
-    object_key = Column(String, nullable=False)
-    content_type = Column(String, nullable=True)
-    uploaded_at = Column(DateTime, default=datetime.utcnow)
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
