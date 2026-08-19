@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app import models
@@ -8,23 +7,6 @@ models.Base.metadata.create_all(bind = engine)
 
 app = FastAPI()
 
-=======
-from datetime import date
-
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-
-from app import models
-from app.database import engine, get_db
-
-models.Base.metadata.create_all(bind=engine)
-
-app = FastAPI()
-
-equipment = []
-bookings = []
-
->>>>>>> 06fab174fc6b25722a03a0a8cc313224d849f195
 @app.get("/")
 def root():
     return {"message": "Equipment Management API is running"}
