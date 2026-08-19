@@ -3,9 +3,9 @@ services:
     build: .
     ports:
       - "8000:8000"
-  environment:
+    environment:
     DATABASE_URL: postgresql://postgres:postgres@db:5432/equipment_db
-  depends_on:
+    depends_on:
     - db
     - seaweedfs
   db:
@@ -25,7 +25,7 @@ services:
     volumes:
       - seaweeddata:/data
   
-  volumes:
+volumes:
     pgdata:
     seaweeddata:
     
