@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app import models
@@ -7,10 +8,28 @@ models.Base.metadata.create_all(bind = engine)
 
 app = FastAPI()
 
+=======
+from datetime import date
+
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from app import models
+from app.database import engine, get_db
+
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI()
+
+equipment = []
+bookings = []
+
+>>>>>>> 06fab174fc6b25722a03a0a8cc313224d849f195
 @app.get("/")
 def root():
     return {"message": "Equipment Management API is running"}
 
+<<<<<<< HEAD
 #Create equipment
 @app.post("/equipment")
 def create_equipment(name: str, category: str, serial_number: str, db: Session = Depends(get_db)):
@@ -19,11 +38,30 @@ def create_equipment(name: str, category: str, serial_number: str, db: Session =
     db.commit()
     db.refresh(equipment)
     return equipment
+=======
+>>>>>>> 06fab174fc6b25722a03a0a8cc313224d849f195
 
 @app.get("/equipment")
-def list_equipment(db: Session = Depends(get_db)):
-    return db.query(models.Equipment).all()
+def list_equipment():
+    return {"equipment": []}
 
+#Create equipment
+@app.post("/equipment")
+def list_equipment(id: int, name: str, category: str):
+    item = {
+        "id": id,
+        "name": name,
+        "category": category
+    }
+    equipment.append(item)
+    return item
+
+#Retrieve all equipment
+@app.get("/equipment")
+def list_equipment():
+    return {"equipment": equipment}
+
+<<<<<<< HEAD
 
 @app.get("/equipment/{equipment_id}")
 def get_equipment(equipment_id: int, db: Session = Depends(get_db)):
@@ -49,7 +87,27 @@ def update_equipment(equipment_id: int, name: str, category: str,
 
 
 # ---------- BOOKINGS ----------
+=======
+#Retrieve one equipment
+@app.get("/equipment/{id}")
+def get_equipment(id: int):
+    for item in equipment:
+        if item["id"] ==id:
+            return item
+        return {"message": "Equipment not found"}
 
+#Update equipment
+@app.put("/equipment/{id}")
+def update_equipment(id: int, name: str, category: str):
+    for item in equipment:
+        if item["id"] == id:
+            item["name"] = name
+            item["category"] = category
+            return item
+        return {"message": "Equipment not found"}
+>>>>>>> 06fab174fc6b25722a03a0a8cc313224d849f195
+
+#Create booking
 @app.post("/bookings")
 def create_booking(equipment_id: int, researcher_name: str,
                    researcher_email: str, start_date: date,
@@ -90,9 +148,16 @@ def create_booking(equipment_id: int, researcher_name: str,
 
 
 @app.get("/bookings")
-def list_bookings(db: Session = Depends(get_db)):
-    return db.query(models.Booking).all()
+def list_bookings():
+    return {"bookings": bookings}
 
+#Retrieve one booking
+@app.get("/bookings/{id}")
+def get_booking(id: int):
+    for booking in bookings:
+        if booking["id"] ==id:
+            return booking
+        return {"message": "Booking not found"}
 
 #Cancel/delete booking
 @app.delete("/bookings/{id}")
@@ -101,4 +166,8 @@ def delete_booking(id: int):
         if booking["id"] == id:
             bookings.remove(booking)
             return {"message": "Booking cancelled"}
+<<<<<<< HEAD
         return{"message": "Booking not found"}"""
+=======
+        return{"message": "Booking not found"}
+>>>>>>> 06fab174fc6b25722a03a0a8cc313224d849f195
