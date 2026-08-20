@@ -4,8 +4,8 @@ import boto3
 s3 = boto3.client(
     "s3",
     endpoint_url = os.getenv("SEAWEEDFS_ENDPOINT", "http://seaweedfs:8333"),
-    aws_access_key_id = "any",
-    aws_secret_access_key = "any",
+    aws_access_key_id = os.getenv("aws_access_key_id"),
+    aws_secret_access_key = os.getenv("aws_secret_access_key"),
 )
 
 BUCKET_NAME = "documents"
