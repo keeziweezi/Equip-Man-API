@@ -7,13 +7,9 @@ models.Base.metadata.create_all(bind = engine)
 
 app = FastAPI()
 
-@app.on_event("startup")
-def startup():
-    storage.ensure_bucket()
-
 @app.get("/")
 def root():
-    return {"message": "Equipment Management API is running"}
+    return{"message": "Equipment Management API is running"}
 
 app.include_router(equipment.router)
 app.include_router(bookings.router)
