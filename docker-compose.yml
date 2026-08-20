@@ -1,0 +1,32 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+     DATABASE_URL: postgresql://postgres:postgres@db:5432/equipment_db
+     SEAWEEDFS_ENDPOINT: http://seaweedfs:8333
+    depends_on:
+    - db
+    - seaweedfs
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: equipment_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  seaweedfs:
+    image: chrislusf/seaweedfs
+    command: server -s3
+    ports:
+      - "8333:8333"
+    volumes:
+      - seaweeddata:/data
+  
+volumes:
+    pgdata:
+    seaweeddata:
+    
