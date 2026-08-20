@@ -29,7 +29,7 @@ def create_booking(booking: schemas.BookingCreate, db: Session = Depends(get_db)
 
 @router.get("", response_model=list[schemas.BookingOut])
 def list_bookings(db: Session = Depends(get_db)):
-return db.query(models.Booking).all()
+    return db.query(models.Booking).all()
 
 @router.delete("/{booking_id}")
 def cancel_booking(booking_id: int, db: Session = Depends(get_db)):
