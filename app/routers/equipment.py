@@ -26,7 +26,7 @@ def get_equipment(equipment_id: int, db: Session = Depends(get_db)):
 
 @router.put("/{equipment_id}", response_model = schemas.EquipmentOut)
 def update_equipment(equipment_id: int, updated: schemas.EquipmentUpdate, db: Session = Depends(get_db)):
-    equipment = db.query(models.Equipment).fitler(models.Equipment.id == equipment_id).first()
+    equipment = db.query(models.Equipment).filter(models.Equipment.id == equipment_id).first()
     if not equipment:
         raise HTTPException(status_code = 404, detail="Equipment not found")
 
